@@ -15,7 +15,7 @@ from ts_benchmark.baselines.utils import (
 )
 
 DEFAULT_TRANSFORMER_BASED_HYPER_PARAMS = {
-    "top_k": 3,
+    "top_k": 5,
     "enc_in": 1,
     "dec_in": 1,
     "c_out": 1,
@@ -37,7 +37,7 @@ DEFAULT_TRANSFORMER_BASED_HYPER_PARAMS = {
     "patch_len": 16,
     "stride": 8,
     "dropout": 0.1,
-    "batch_size": 16,
+    "batch_size": 32,
     "lr": 0.0001,
     "num_epochs": 10,
     "num_workers": 0,
@@ -48,8 +48,8 @@ DEFAULT_TRANSFORMER_BASED_HYPER_PARAMS = {
     "p_hidden_dims": [128, 128],
     "p_hidden_layers": 2,
     "mem_dim": 32,
-    "anomaly_ratio": 1.0,
     "conv_kernel": [12, 16],
+    "anomaly_ratio": 1.0,
 }
 
 
@@ -465,7 +465,6 @@ class TransformerAdapter:
         total_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad
         )
-        print(str(vars(self.config)))
         print(f"Total trainable parameters: {total_params}")
 
         for epoch in range(config.num_epochs):

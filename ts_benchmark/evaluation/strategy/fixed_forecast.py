@@ -19,15 +19,15 @@ from ts_benchmark.utils.random_utils import fix_random_seed
 
 class FixedForecast(Strategy):
     """
-    固定预测策略类，用于在时间序列数据上执行固定预测。
+    Fixed forecast strategy class, used to perform fixed predictions on time series data.
     """
 
     REQUIRED_FIELDS = ["pred_len"]
 
     def __init__(self, strategy_config: dict, evaluator: Evaluator):
         """
-        初始化固定预测策略对象。
-        :param strategy_config: 模型评估配置。
+        Initialize fixed forecast policy objects.
+        :param strategy_config: Model evaluation configuration.
         """
         super().__init__(strategy_config, evaluator)
         self.pred_len = self.strategy_config["pred_len"]
@@ -35,11 +35,11 @@ class FixedForecast(Strategy):
 
     def execute(self, series_name: str, model_factory: ModelFactory) -> Any:
         """
-        执行固定预测策略。
+        Implement a fixed prediction strategy.
 
-        :param series_name: 要执行预测的序列名称。
-        :param model_factory: 模型对象的构造/工厂函数。
-        :return: 评估结果。
+        :param series_name: The name of the sequence to be predicted.
+        :param model_factory: Construction of model objects/factory functions.
+        :return: Evaluation results.
         """
         fix_random_seed()
         model = model_factory()
@@ -48,7 +48,7 @@ class FixedForecast(Strategy):
             train_length = len(data) - self.pred_len
             if train_length <= 0:
                 raise ValueError("The prediction step exceeds the data length")
-            train_valid_data, test_data = split_before(data, train_length)  # 分割训练和测试数据
+            train_valid_data, test_data = split_before(data, train_length)
 
 
             train_data, rest = split_before(train_valid_data, int(train_length * self.strategy_config["train_valid_split"]))
@@ -57,11 +57,11 @@ class FixedForecast(Strategy):
 
             start_fit_time = time.time()
             if hasattr(model, "forecast_fit"):
-                model.forecast_fit(train_valid_data, self.strategy_config["train_valid_split"])  # 在训练数据上拟合模型
+                model.forecast_fit(train_valid_data, self.strategy_config["train_valid_split"])
             else:
-                model.fit(train_valid_data, self.strategy_config["train_valid_split"])  # 在训练数据上拟合模型
+                model.fit(train_valid_data, self.strategy_config["train_valid_split"])
             end_fit_time = time.time()
-            predict = model.forecast(self.pred_len, train_valid_data)  # 预测未来数据
+            predict = model.forecast(self.pred_len, train_valid_data)
 
             end_inference_time = time.time()
 
@@ -69,17 +69,17 @@ class FixedForecast(Strategy):
 
             single_series_results, log_info = self.evaluator.evaluate_with_log(
                 actual, predict, self.scaler, train_valid_data.values
-            )  # 计算评价指标
+            )
 
             inference_data = pd.DataFrame(
                 predict, columns=test_data.columns, index=test_data.index
             )
             actual_data_pickle = pickle.dumps(test_data)
-            # 使用 base64 进行编码
+            # Encoding using base64
             actual_data_pickle = base64.b64encode(actual_data_pickle).decode("utf-8")
 
             inference_data_pickle = pickle.dumps(inference_data)
-            # 使用 base64 进行编码
+            # Encoding using base64
             inference_data_pickle = base64.b64encode(inference_data_pickle).decode(
                 "utf-8"
             )
@@ -103,11 +103,11 @@ class FixedForecast(Strategy):
     @staticmethod
     def accepted_metrics():
         """
-        获取固定预测策略接受的评价指标列表。
+        Obtain a list of evaluation metrics accepted by fixed forecast strategies.
 
-        :return: 评价指标列表。
+        :return: List of evaluation metrics.
         """
-        return regression_metrics.__all__  # 返回评价指标列表
+        return regression_metrics.__all__
 
     @property
     def field_names(self) -> List[str]:

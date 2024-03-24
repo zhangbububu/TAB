@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 from typing import Dict, Optional, Any
@@ -101,7 +100,7 @@ class DartsModelAdapter:
         #             "Multi-gpu training is not supported, using only gpu %s",
         #             self.model_args["pl_trainer_kwargs"]["devices"],
         #         )
-        if self.allow_fit_on_eval:
+        if self.allow_fit_on_eval or self.model_name == "RegressionModel":
             # If it is true, it means that statistical learning methods use retraining to predict future values, because statistical learning does not require partitioning the validation set.
             # Therefore, the segmentation ratio is set to 1, which means that the validation set is not segmented
             train_val_ratio = 1
@@ -216,6 +215,9 @@ DARTS_DEEP_MODEL_REQUIRED_ARGS3 = {
     "output_chunk_length": "output_chunk_length",
     "normalization": "norm",
 }
+DARTS_STAT_MODEL_REQUIRED_ARGS1 = {
+    "normalization": "norm",
+}
 DARTS_DEEP_MODEL_ARGS = {
     "pl_trainer_kwargs": {
         "enable_progress_bar": False,
@@ -249,21 +251,21 @@ DARTS_MODELS = [
 
 # The following models specifically allow for retraining during inference
 DARTS_STAT_MODELS = [
-    (model.ARIMA, {}, {}),
-    (model.VARIMA, {}, {}),
-    (model.AutoARIMA, {}, {}),
-    (model.StatsForecastAutoCES, {}, {}),
-    (model.StatsForecastAutoTheta, {}, {}),
-    (model.StatsForecastAutoETS, {}, {}),
-    (model.ExponentialSmoothing, {}, {}),
-    (model.StatsForecastAutoARIMA, {}, {}),
-    (model.FFT, {}, {}),
-    (model.FourTheta, {}, {}),
-    (model.Croston, {}, {}),
-    (model.NaiveDrift, {}, {}),
-    (model.NaiveMean, {}, {}),
-    (model.NaiveSeasonal, {}, {}),
-    (model.NaiveMovingAverage, {}, {}),
+    (model.ARIMA, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.VARIMA, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.AutoARIMA, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.StatsForecastAutoCES, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.StatsForecastAutoTheta, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.StatsForecastAutoETS, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.ExponentialSmoothing, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.StatsForecastAutoARIMA, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.FFT, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.FourTheta, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.Croston, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.NaiveDrift, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.NaiveMean, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.NaiveSeasonal, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
+    (model.NaiveMovingAverage, DARTS_STAT_MODEL_REQUIRED_ARGS1, {}),
 ]
 
 # Generate model factories for each model class and required parameters in DARTS-MODELS and add them to global variables

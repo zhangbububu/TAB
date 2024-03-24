@@ -8,7 +8,6 @@ from typing import List, Any
 import numpy as np
 import pandas as pd
 
-from ts_benchmark.baselines.utils import train_val_split
 from ts_benchmark.data_loader.data_pool import DataPool
 from ts_benchmark.evaluation.evaluator import Evaluator
 from ts_benchmark.evaluation.metrics import regression_metrics
@@ -27,12 +26,9 @@ SPLIT_DICT = {
     "PEMS04.csv": 0.75,
     "PEMS07.csv": 0.75,
     "PEMS08.csv": 0.75,
-    "solar.csv": 0.75,
-    "PRSA_Data_Shunyi_20130301-20170228.csv": 0.75,
-    "PRSA_Data_Wanshouxigong_20130301-20170228.csv": 0.75,
-    "pems-d7m.csv": 0.75,
-    "nyc_bike.csv": 0.75,
-    "nyc_taxi_forecast.csv": 0.75,
+    "Solar.csv": 0.75,
+    "AQShunyi.csv": 0.75,
+    "AQWan.csv": 0.75,
 }
 
 
@@ -40,15 +36,16 @@ class RollingForecast(Strategy):
     REQUIRED_FIELDS = ["pred_len", "train_test_split", "stride", "num_rollings"]
 
     """
-    滚动预测策略类，用于在时间序列数据上执行滚动预测。
+    Rolling forecast strategy class, used to perform rolling prediction on time series data.
+
     """
 
     def __init__(self, strategy_config: dict, evaluator: Evaluator):
         """
-        初始化滚动预测策略对象。
+        Initialize the rolling forecast strategy object.
 
 
-        :param strategy_config: 模型评估配置。
+        :param strategy_config: Model evaluation configuration.
         """
         super().__init__(strategy_config, evaluator)
         self.data_lens = None
@@ -57,11 +54,11 @@ class RollingForecast(Strategy):
 
     def _get_index(self, test_length: int, train_length: int) -> List[int]:
         """
-        获取滚动窗口的索引列表。
+        Get the index list of the scrolling window.
 
-        :param test_length: 测试数据长度。
-        :param train_length: 训练数据长度。
-        :return: 滚动窗口的索引列表。
+        :param test_length: Test data length.
+        :param train_length: Training data length.
+        :return: Scroll through the index list of the window.
         """
         stride = self.strategy_config["stride"]
         index_list = list(
@@ -75,11 +72,11 @@ class RollingForecast(Strategy):
 
     def execute(self, series_name: str, model_factory: ModelFactory) -> Any:
         """
-        执行滚动预测策略。
+        Execute rolling prediction strategy.
 
-        :param series_name: 要执行预测的序列名称。
-        :param model_factory: 模型对象的构造/工厂函数。
-        :return: 评估结果的平均值。
+        :param series_name: The name of the sequence to be predicted.
+        :param model_factory: Construction of model objects/factory functions.
+        :return: The average of the evaluation results.
         """
         fix_random_seed()
         model = model_factory()
@@ -99,33 +96,33 @@ class RollingForecast(Strategy):
                 raise ValueError(
                     "The length of training or testing data is less than or equal to 0"
                 )
-            train_valid_data, test_data = split_before(data, train_length)  # 分割训练数据
+            train_valid_data, test_data = split_before(data, train_length)
 
-            train_data, rest = split_before(train_valid_data, int(train_length * self.strategy_config["train_valid_split"]))
-
+            train_data, rest = split_before(train_valid_data, int(train_length * SPLIT_DICT.get(series_name, self.strategy_config["train_valid_split"])))
+            print(SPLIT_DICT.get(series_name, self.strategy_config["train_valid_split"]))
             self.scaler.fit(train_data.values)
 
             start_fit_time = time.time()
             if hasattr(model, "forecast_fit"):
-                model.forecast_fit(train_valid_data, self.strategy_config["train_valid_split"])  # 在训练数据上拟合模型
+                model.forecast_fit(train_valid_data, SPLIT_DICT.get(series_name, self.strategy_config["train_valid_split"]))
             else:
-                model.fit(train_valid_data, self.strategy_config["train_valid_split"])  # 在训练数据上拟合模型
+                model.fit(train_valid_data, SPLIT_DICT.get(series_name, self.strategy_config["train_valid_split"]))
             end_fit_time = time.time()
-            index_list = self._get_index(test_length, train_length)  # 获取滚动窗口的索引列表
+            index_list = self._get_index(test_length, train_length)
             total_inference_time = 0
             all_rolling_actual = []
             all_rolling_predict = []
             for i in range(min(len(index_list), self.num_rollings)):
                 index = index_list[i]
-                train, other = split_before(data, index)  # 分割训练数据
-                test, rest = split_before(other, self.pred_len)  # 分割测试数据
+                train, other = split_before(data, index)
+                test, rest = split_before(other, self.pred_len)
                 start_inference_time = time.time()
-                predict = model.forecast(self.pred_len, train)  # 预测未来数据
+                predict = model.forecast(self.pred_len, train)
                 end_inference_time = time.time()
                 total_inference_time += end_inference_time - start_inference_time
 
                 actual = test.to_numpy()
-                single_series_result = self.evaluator.evaluate(  # 计算评价指标
+                single_series_result = self.evaluator.evaluate(
                     actual, predict, self.scaler, train_valid_data.values
                 )
 
@@ -141,16 +138,16 @@ class RollingForecast(Strategy):
             )
             single_series_results = np.mean(
                 np.stack(all_test_results), axis=0
-            ).tolist()  # 对所有滚动结果求均值
+            ).tolist()
             print(single_series_results)
             all_rolling_actual_pickle = pickle.dumps(all_rolling_actual)
-            # 使用 base64 进行编码
+            # Encoding using base64
             all_rolling_actual_pickle = base64.b64encode(
                 all_rolling_actual_pickle
             ).decode("utf-8")
 
             all_rolling_predict_pickle = pickle.dumps(all_rolling_predict)
-            # 使用 base64 进行编码
+            # Encoding using base64
             all_rolling_predict_pickle = base64.b64encode(
                 all_rolling_predict_pickle
             ).decode("utf-8")
@@ -182,11 +179,11 @@ class RollingForecast(Strategy):
     @staticmethod
     def accepted_metrics() -> List[str]:
         """
-        获取滚动预测策略接受的评价指标列表。
+        Obtain a list of evaluation metrics accepted by the rolling prediction strategy.
 
-        :return: 评价指标列表。
+        :return: List of evaluation metrics.
         """
-        return regression_metrics.__all__  # 返回评价指标列表
+        return regression_metrics.__all__
 
     @property
     def field_names(self) -> List[str]:
