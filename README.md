@@ -46,14 +46,14 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 1. **Define you model or adapter class**
 
   - The user-implemented model or adapter class should implement the following functions in order to adapt to this benchmark.
-  - required_hyper_params function is optional，__repr__ functions is necessary.
+
 
   - **The function prototype is as follows：**
 
 
 
     
-    - forecast_fit  function training model
+    - detect_fit  function training model
     
       ```python
       # For example
@@ -69,7 +69,7 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
         pass
       ```
     
-    - forecast function utilizing the model for inference
+    - detect_score function utilizing the model for inference
     
       ```python
 
@@ -131,7 +131,7 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 ## Example Usage
 
 - **Define the model class or factory**
-  - We demonstrated what functions need to be implemented for time series forecasting  using the VAR algorithm. You can find the complete code in `./ts_benchmark/baselines/self_implementation/VAR/VAR.py`.
+  - We demonstrated what functions need to be implemented for time series anomaly detection using the LOF algorithm. You can find the complete code in  `/ts_benchmark/baselines/self_implementation/LOF/lof.py`
 
 ```python
 class LOF:
@@ -263,8 +263,9 @@ class LOF:
 - **Run benchmark using VAR**
 
   ```shell
-  python ./scripts/run_benchmark.py --config-path "rolling_forecast_config.json" --data-name-list "ETTh1.csv" --strategy-args '{"pred_len":96}' --model-name "self_implementation.VAR_model" --gpus 0  --num-workers 1  --timeout 60000  --save-path "ETTh1/VAR_model"
+  python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"   --data-name-list "S4-ADL2.test.csv@79.csv"  --model-name "self_implementation.LOF" --gpus 0  --num-workers 1  --timeout 60000  --save-path "Results"
   ```
+
 
 
 

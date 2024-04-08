@@ -5,10 +5,8 @@ from typing import Union, NoReturn, List
 
 import pandas as pd
 
-from ts_benchmark.common.constant import FORECASTING_DATASET_PATH
 from ts_benchmark.common.constant import ANOMALY_DETECT_DATASET_PATH
 from ts_benchmark.common.constant import META_DETECTION_DATA_PATH
-from ts_benchmark.common.constant import META_FORECAST_DATA_PATH
 from ts_benchmark.utils.data_processing import read_data
 from ts_benchmark.utils.design_pattern import Singleton
 from ts_benchmark.utils.parallel import SharedStorage
@@ -18,9 +16,7 @@ from operator import and_
 
 
 SIZE = {
-    "large_forecast": ["large", "medium", "small"],
-    "medium_forecast": ["medium", "small"],
-    "small_forecast": ["small"],
+
     "large_detect": ["large", "medium", "small"],
     "medium_detect": ["medium", "small"],
     "small_detect": ["small"],
