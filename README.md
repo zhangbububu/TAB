@@ -1,397 +1,296 @@
-# Open TimeSeries Benchmark（OTB）
+# <ins>T</ins>ime Series <ins>A</ins> nomaly Detection <ins>B</ins>enchmark (TAB)
 
-**OTB是一个面向时间序列研究人员的开源库。**
+**TAB is an open-source library designed for time series researchers.**
 
-**我们提供了一个整洁的代码库来端到端的评估时间序列模型在不同评估策略以及评价指标下与baseline算法性能的对比。**
+**We provide a clean codebase for end-to-end evaluation of time series anomaly detection models, comparing their performance with baseline algorithms under various evaluation strategies and metrics.**
+
+**We are further optimizing our code and welcome any suggestions for modifications.**
+
 
 ## Quickstart
 
 ### Installation
 
-Given a python environment (**note**: this project ßis fully tested under python 3.8), install the dependencies with the following command:
+Given a python environment (**note**: this project is fully tested under python 3.8), install the dependencies with the following command:
 
-```
+```shell
 pip install -r requirements.txt
 ```
+
+
 
 ### Data preparation
 
 Prepare Data. You can obtained the well pre-processed datasets from [Google Drive](https://drive.google.com/file/d/1PyZ16UjS1j7TVT0OCTPw4geY0YM8hojl/view?usp=drive_link).Then place the downloaded data under the folder `./dataset`. 
 
-### Example Usage
 
-#### Forecasting Example:
+### Train and evaluate model.
 
-- **Define the model class or factory**
-  - We demonstrated what functions need to be implemented for time series forecasting based on **fixed_forecast strategy** using the LSTM algorithm. You can find the complete code in ` ./ts_benchmark/baseline/lstm.py`.
-  - The algorithm expects input data in the form of a `pd.DataFrame`, where the time column serves as the index.
+We provide the experiment scripts for all benchmarks. For example，you can reproduce a experiment result as the following:
 
+```shell
+python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"  
+--data-name-list "S4-ADL2.test.csv@79.csv" 
+--model-name "time_series_library.PatchTST"   
+--model-hyper-params '{"batch_size":128, "seq_len":100,"d_model":8, "d_ff":8, "e_layers":3, "num_epochs":3, "pred_len":0}'  
+--adapter "transformer_adapter" 
+--report-method csv 
+--gpus 1 
+--num-workers 1 
+--timeout 60000  
+--save-path "for_validation7"
 ```
-class TimeSeriesLSTM:
 
-    def forecast_fit(self, train_data: pd.DataFrame):
+### Steps to develop your own method
+
+1. **Define you model or adapter class**
+
+  - The user-implemented model or adapter class should implement the following functions in order to adapt to this benchmark.
+  - required_hyper_params function is optional，__repr__ functions is necessary.
+
+  - **The function prototype is as follows：**
+
+
+
+    
+    - forecast_fit  function training model
+    
+      ```python
+      # For example
+      def detect_fit(self, train_data: pd.DataFrame, train_label=None):
         """
-        训练模型。
-
-        :param train_data: 用于训练的时间序列数据。
+        Training model
+        :param train_data:
         :type train_data: pd.DataFrame
-        """
-		pass
-
-    def forecast(self, pred_len: int, testdata: pd.DataFrame) -> np.ndarray:
-        """
-        进行预测。
-
-        :param pred_len: 预测的长度
-        :type pred_len: int
-        :param testdata: 用于预测的时间序列数据
-        :type testdata: pd.DataFrame
-        
-        :return: 预测结果的数组
-        :rtype: np.ndarray
-        """
-        
-        return output
-
-    def __repr__(self) -> str:
-        """
-        返回模型名称的字符串表示。
-        """
-        
-        return "LSTM"
-
-```
-
-- **Run benchmark with fixed_forecaststrategy**
-
-  ```
-  python ./scripts/run_benchmark.py --config-path "fixed_forecast_config.json" --data-set-name "small_forecast" --model-name "lstm.TimeSeriesLSTM"
-  ```
-
-#### Anomaly Detection Example：
-
-- **Define the model class or factory**
-  - We demonstrated what functions need to be implemented for anomaly detection based on **fixed_detect_score strategy** using the LOF algorithm. You can find the complete code in ` ./ts_benchmark/baseline/lof.py`.
-  - The algorithm expects input data in the form of a `pd.DataFrame`, where the time column serves as the index.
-
-
-```
-class LOF:
-
-    def detect_fit(self, train_data: pd.DataFrame, train_label=None):
-        """
-        训练 LOF 模型。
-
-        :param train_data: 训练数据
-        :type train_data: pd.DataFrame
-        :param train_label: 标签数据（可选）
+        :param train_label: Label of train_data[optional]
         :type train_label: pd.DataFrame
         """
         
         pass
+      ```
+    
+    - forecast function utilizing the model for inference
+    
+      ```python
 
-    def detect_score(self, data: pd.DataFrame) -> np.ndarray:
+      # For example
+      def detect_score(self, data: pd.DataFrame) -> np.ndarray:
         """
-        使用 LOF 模型计算异常得分
-
-        :param data: 待计算得分的数据
-        :type data: pd.DataFrame
-
-        :return: 异常得分数组
+        Use models for computing anomaly scores
+        
+        :param train: Training data to be detect
+        :type train: pd.DataFrame
+        
+        :return: Anomaly scores for each time point
         :rtype: np.ndarray
         """
         
         return score
-
-    def __repr__(self) -> str:
-        """
-        返回模型名称的字符串表示。
-        """
-        
-        return "LOF"
-
-```
-
-- **Run benchmark with fixed_detect_score strategy:**
-
-  ```
-  python ./scripts/run_benchmark.py --config-path "fixed_detect_score_config.json" --data-set-name "small_detect" --model-name "lof.LOF"
-  ```
-
-
-
-## User guide
-
-### Data Format
-
-The algorithm expects input data in the form of a `pd.DataFrame`, where the time column serves as the index. If the time values are integers of type `int`, they will be retained in this format. However, if the time values are in the standard timestamp format, they will be converted to a `pd.DatetimeIndex` type.
-
-#### Example
-
-- **The time values are integers of type `int`，they will be retained in this format.**
-
-```
-           col_1  col_2  col_3  col_4  ...  col_53  
-date                                   ...                               
-1       2.146646    0.0    0.0    0.0  ...     0.0    
-2       2.146646    0.0    0.0    0.0  ...     0.0    
-3       2.146646    0.0    0.0    0.0  ...     0.0     
-4       2.151326    0.0    0.0    0.0  ...     0.0     
-5       2.163807    0.0    0.0    0.0  ...     0.0    
-...          ...    ...    ...    ...  ...     ...     
-132042  0.499149    0.0    0.0    0.0  ...     0.0  
-132043  0.501221    0.0    0.0    0.0  ...     0.0     
-132044  0.501221    0.0    0.0    0.0  ...     0.0     
-132045  0.501221    0.0    0.0    0.0  ...     0.0    
-132046 -0.954212    0.0    0.0    0.0  ...     0.0     
-```
-
-- **The time values are in the standard timestamp format, they will be converted to a `pd.DatetimeIndex` type.**
-
-```
-                           col_1
-date                            
-2012-09-28 12:00:00  2074.503844
-2012-09-29 12:00:00  3024.346943
-2012-09-30 12:00:00  3088.428014
-2012-10-01 12:00:00  3103.715163
-2012-10-02 12:00:00  3123.547161
-...                          ...
-2016-05-03 12:00:00  9033.287169
-2016-05-04 12:00:00  9055.950486
-2016-05-05 12:00:00  9202.848984
-2016-05-06 12:00:00  9180.724092
-2016-05-07 12:00:00  9132.311537
-```
-
-### Folder Description
-
-```
-- baselines：存储baseline模型。包括第三方库模型，以及本仓库复现的模型
-
-- common：存储一些常量，例如配置文件路径：CONFIG_PATH
-
-- config：存储不同评估策略下的配置文件
-
-- data_loader：存储数据抓取以及数据加载的文件
-
-- evaluation：存储评估策略类、评价指标的实现、运行评估模型的文件
-
-- models：存储根据用户输入的模型路径，返回模型工厂
-
-- report：存储呈现要评估算法与baseline算法性能对比的文件
-
-- utils：存储一些工具文件
-
-- pipeline：存储整个benchmark pipeline连通的文件
-```
-
-
-
-### Steps to Evaluate Your Model
-
-- **Define you model class or factory**
-  - 对于不同的策略而言，用户实现的模型为了适配本benchmark，模型当中应该实现如下函数.
-  - 对于所有策略而言，required_hyper_params函数 是可选的，__repr__ 函数是必须的.
-  - 其他函数与策略的匹配关系如下表：
-  
-  |    strategy_name     | Strategic implications                                       | forecast_fit | detect_fit | forecast | detect_label | detect_score |
-  | :------------------: | :----------------------------------------------------------- | :----------: | :--------: | :------: | :----------: | :----------: |
-  |    fixed_forecast    | Fixed_forecast, with a total of n time points. If the defined prediction step size is f time points, then (n-f) time points are used as training data to predict future f time points. |      √       |            |    √     |              |              |
-  |   rolling_forecast   | Rolling_forecast mirrors the cross-validation approach commonly utilized in machine learning. Here, the term 'origin' pertains to the training set within the time series, which is gradually expanded. In simpler terms, this technique enables the generation of multiple forecasts, each produced using an increasingly larger training set extracted from a single time series. |      √       |            |    √     |              |              |
-  |  fixed_detect_label  | Fixed_detect_label refers to the user defined segmentation ratio of the training set test set, and the algorithm ultimately outputs anomaly labels. |              |     √      |          |      √       |              |
-  |  fixed_detect_score  | Fixed_detect_score  refers to the user defined segmentation ratio of the training set test set, and the algorithm ultimately outputs abnormal scores. |              |     √      |          |              |      √       |
-  | unfixed_detect_label | Unfixed_detect_label refers to the segmentation of the training set test set following the original data segmentation method, and the algorithm ultimately outputs abnormal labels. |              |     √      |          |      √       |              |
-  | unfixed_detect_score | Unfixed_detect_score refers to the segmentation of the training set test set following the original data segmentation method, and the algorithm ultimately outputs abnormal scores. |              |     √      |          |              |      √       |
-  |   all_detect_label   | All_detect_label refers to not dividing the training and testing sets, where all data is used as both the training and testing sets, and the algorithm ultimately outputs anomaly labels. |              |     √      |          |      √       |              |
-  |   all_detect_score   | All_detect_score refers to not dividing the training and testing sets, where all data is used as both the training and testing sets, and the algorithm ultimately outputs anomaly scores. |              |     √      |          |              |      √       |
-  - **函数原型如下：**
-
-    - required_hyper_params 函数:
-
       ```
+    
+    - __repr __ string representation of function model name
+    
+      ```python
       """
-      返回模型所需的超参数。
-      该函数是可选的，且是静态的。
+      Returns a string representation of the model name
       
-      :return: 一个字典，表示模型需要的超参数。
-      :rtype: dict
-      """
-      ```
-    
-    - forecast_fit 函数训练模型
-    
-      ```
-      """
-      在时间序列数据上拟合模型。
-      
-      :param series: 时间序列数据。
-      :type series: pd.DataFrame
-      """
-      ```
-    
-    - forecast 函数对模型进行预测
-    
-      ```
-      """
-      使用模型进行预测。
-      
-      :param pred_len: 预测长度。
-      :type pred_len: int
-      :param train: 用于拟合模型的训练数据。
-      :type train: pd.DataFrame
-      
-      :return: 预测结果。
-      :rtype: np.ndarray
-      """
-      ```
-    
-    - detect_label 函数对模型进行预测
-    
-      ```
-      """
-      使用模型进行异常检测并生成标签。
-      
-      :param train: 用于异常检测的训练数据。
-      :type train: pd.DataFrame
-      
-      :return: 异常标签数组。
-      :rtype: np.ndarray
-      """
-      ```
-    
-    - detect_score 函数对模型进行预测
-    
-      ```
-      """
-      使用模型计算异常得分。
-      
-      :param train: 用于计算得分的训练数据。
-      :type train: pd.DataFrame
-      
-      :return: 异常得分数组。
-      :rtype: np.ndarray
-      """
-      ```
-    
-    - __repr __函数模型名称的字符串表示
-    
-      ```
-      """
-      返回模型名称的字符串表示。
-      
-      :return: 返回模型名称的字符串表示。
+      :return: Returns a string representation of the model name
       :rtype: str
       """
+      # For example
+      def __repr__(self) -> str:
+          return self.model_name
       ```
     
-    
 
-- **Configure your Configuration File**
+2. **Configure your Configuration File**
 
   - modify the corresponding config under the folder `./ts_benchmark/config/`.
 
-  - modify the contents in run_benchmark_demo.py.
-  
-  - **We strongly recommend using the pre-defined configurations in `./ts_benchmark_config/`. Create your own  configuration file only when you have a clear understanding of the configuration items.**
+  - modify the contents in  `./scripts/run_benchmark.py/`.
 
-- **运行benchmark可参考如下格式：**
+  - **We strongly recommend using the pre-defined configurations in `./ts_benchmark/config/`. Create your own  configuration file only when you have a clear understanding of the configuration items.**
 
-```
-python ./scripts/run_benchmark.py --config-path "fixed_forecast_config.json" --data-set-name "small_forecast" --adapter None "statistics_darts_model_adapter" --model-name "darts_models.darts_arima" "darts.models.forecasting.arima.ARIMA" --model-hyper-params "{\"p\":7}" "{}" 
-```
+3. **The benchmark can be run in the following format：**
 
-
-
-### Introduction to Configuration Parameters
-
-```
-`./ts_benchmark/config/`.中包含如下配置文件
-
-# 固定预测
-./ts_benchmark/config/fixed_forecast_config.json
-# 滚动预测
-./ts_benchmark/config/rolling_forecast_config.json
-# 固定方式切分数据集，算法输出异常标签
-./ts_benchmark/config/fixed_detect_label_config.json
-# 固定方式切分数据集，算法输出异常得分
-./ts_benchmark/config/fixed_detect_score_config.json
-# 按照数据集原始切分方式切分数据，算法输出异常标签
-./ts_benchmark/config/unfixed_detect_label_config.json
-# 按照数据集原始切分方式切分数据，算法输出异常得分
-./ts_benchmark/config/unfixed_detect_score_config.json
+```shell
+python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"  
+--data-name-list "S4-ADL2.test.csv@79.csv" 
+--model-name "time_series_library.PatchTST"   
+--model-hyper-params '{"batch_size":128, "seq_len":100,"d_model":8, "d_ff":8, "e_layers":3, "num_epochs":3, "pred_len":0}'  
+--adapter "transformer_adapter" 
+--report-method csv 
+--gpus 1 
+--num-workers 1 
+--timeout 60000  
+--save-path "for_validation7"
 ```
 
-**每一份配置文件中包含以下四部分内容：**
+
+
+## Example Usage
+
+- **Define the model class or factory**
+  - We demonstrated what functions need to be implemented for time series forecasting  using the VAR algorithm. You can find the complete code in `./ts_benchmark/baselines/self_implementation/VAR/VAR.py`.
+
+```python
+class LOF:
+    """
+    LOF (Local Outlier Factor) model class, used for anomaly detection.
+
+    LOF is a density based anomaly detection method used to identify data points with significantly different densities compared to their neighbors in a dataset.
+    """
+
+    def __init__(
+        self,
+        n_neighbors: int = 20,
+        algorithm: str = "auto",
+        leaf_size: int = 30,
+        metric: str = "minkowski",
+        p: int = 2,
+        metric_params: dict = None,
+        contamination: float = 0.1,
+        n_jobs: int = 1,
+    ):
+        """
+        Initialize the LOF model.
+
+        :param n_neighbors: Used to calculate the number of neighbors in the LOF.
+        :param algorithm: The algorithm used for LOF calculation.
+        :param leaf_size: The leaf size used when constructing KD trees or ball trees.
+        :param metric: The distance metric used to calculate distance.
+        :param p: The parameter p in distance measurement.
+        :param metric_params: Other parameters for distance measurement.
+        :param contamination: The proportion of expected abnormal samples.
+        :param n_jobs: The number of worker threads used for parallel computing.
+        """
+        self.n_neighbors = n_neighbors
+        self.contamination = contamination
+        self.algorithm = algorithm
+        self.leaf_size = leaf_size
+        self.metric = metric
+        self.p = p
+        self.metric_params = metric_params
+        self.n_jobs = n_jobs
+        self.model_name = "LOF"
+
+    @staticmethod
+    def required_hyper_params() -> dict:
+        """
+        Return the hyperparameters required for the LOF model.
+
+        :return: An empty dictionary indicating that the LOF model does not require additional hyperparameters.
+        """
+        return {}
+
+    def detect_fit(self, X, y=None):
+        """
+        Train LOF models.
+
+        :param X: Training data.
+        :param y: Label data (optional).
+        """
+        pass
+
+    def detect_score(self, X: pd.DataFrame) -> np.ndarray:
+        """
+        Use the LOF model to calculate anomaly scores.
+
+        :param X: The data of the score to be calculated.
+        :return: Anomaly score array.
+        """
+        X = X.values.reshape(-1, 1)
+
+        self.detector_ = LocalOutlierFactor(
+            n_neighbors=self.n_neighbors,
+            algorithm=self.algorithm,
+            leaf_size=self.leaf_size,
+            metric=self.metric,
+            p=self.p,
+            metric_params=self.metric_params,
+            contamination=self.contamination,
+            n_jobs=self.n_jobs,
+        )
+        self.detector_.fit(X=X)
+
+        self.decision_scores_ = -self.detector_.negative_outlier_factor_
+
+        score = (
+            MinMaxScaler(feature_range=(0, 1))
+            .fit_transform(self.decision_scores_.reshape(-1, 1))
+            .ravel()
+        )
+        return score
+
+    def detect_label(self, X: pd.DataFrame) -> np.ndarray:
+        """
+        Use LOF model for anomaly detection and generate labels.
+
+        :param X: The data to be tested.
+        :return: Anomaly label array.
+        """
+        X = X.values.reshape(-1, 1)
+
+        self.detector_ = LocalOutlierFactor(
+            n_neighbors=self.n_neighbors,
+            algorithm=self.algorithm,
+            leaf_size=self.leaf_size,
+            metric=self.metric,
+            p=self.p,
+            metric_params=self.metric_params,
+            contamination=self.contamination,
+            n_jobs=self.n_jobs,
+        )
+        self.detector_.fit(X=X)
+
+        self.decision_scores_ = -self.detector_.negative_outlier_factor_
+
+        score = (
+            MinMaxScaler(feature_range=(0, 1))
+            .fit_transform(self.decision_scores_.reshape(-1, 1))
+            .ravel()
+        )
+        return score
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the model name.
+        """
+        return self.model_name
 
 ```
-1."data_loader_config": 配置需要评估的数据集特征信息; type: dict
------"data-set-name"：数据集尺寸大小以及是时序预测数据集还是时序异常检测数据集;type: str
-------------"large_forecast":大规模时序预测数据集
-------------"medium_forecast": 中等规模时序预测数据集
-------------"small_forecast":小规模时序预测数据集
-------------"large_detect":大规模时序异常检测数据集
-------------"medium_detect": 中等规模时序异常检测数据集
-------------"small_detect":小规模时序异常检测数据集
------"feature_dict"：包含如下的键值; type: dict
-------------"if_univariate"：true代表挑选单元数据集，false代表挑选多元数据集
-------------"if_trend"：true代表数据集有趋势性，false代表数据集无趋势性，null代表不区分有无趋势性，默认为null
-------------"has_timestamp"：true代表数据集有时间戳，false代表数据集无时间戳，null代表不区分有无时间戳，默认为null
-------------"if_season"：true代表数据集有季节性，false代表数据集无季节性，null代表不区分有无季节性，默认为null
-```
 
-```
-2."model_config": 配置需要评估的模型信息以及模型的推荐超参数; type: dict
------"models"：模型信息，类型为：list[dict]；如下三个键值以及其对应value构成一个dict；
-------------"adapter"：选定模型适配器，如不需要适配器传入空字符串
-------------"model-name"：模型路径
-------------"model-hyper-params"：输入给模型的参数，若参数名和"recommend_model_hyper_params"中参数名相同，则覆盖后者
------"recommend_model_hyper_params"：有的算法必须输入一些参数，才能运行；如果用户没有输入这些参数，我们提供了默认参数，供这些算法自动获取对应参数值; type: dict
-------------"input_chunk_length"：模型回看窗口长度
-------------"output_chunk_length"：模型输出步长
-```
+- **Run benchmark using VAR**
 
-```
-3."model_eval_config": 配置需要的评估策略以及评价指标; type: dict
------"metric_name": 评价指标名称; type：str；dict；list； 示例如下：
-------------"all": 代表测评本仓库支持的所有评价指标
-------------"mae"：测评 Mean Absolute Error
-------------{"name": "mase", "seasonality": 10}
-------------[{"name": "mase", "seasonality": 10},"mae",{"name": "mase", "seasonality": 2}]
------"strategy_args":
-------------"strategy_name"：评价策略名称，options：["fixed_forecast", "rolling_forecast", "fixed_detect_label", "fixed_detect_score", "unfixed_detect_label", "unfixed_detect_score","all_detect_label","all_detect_score"]
-------------"pred_len":预测步长
-------------"train_test_split"：划分训练集，测试集的比例
-------------"stride"：滚动预测中跨越步长
-------------"num_rollings"：滚动预测中最大滚动次数
-```
+  ```shell
+  python ./scripts/run_benchmark.py --config-path "rolling_forecast_config.json" --data-name-list "ETTh1.csv" --strategy-args '{"pred_len":96}' --model-name "self_implementation.VAR_model" --gpus 0  --num-workers 1  --timeout 60000  --save-path "ETTh1/VAR_model"
+  ```
 
-**The various `strategy_name` within `model_eval_config` require different configuration parameters. The correspondence between `strategy_name` and stratege related parameters is as follows:**
 
-| strategy_name      | pred_len | train_test_split | stride | num_rollings |
-| ------------------ | -------- | ---------------- | ------ | ------------ |
-| fixed_forecast     | √        |                  |        |              |
-| rolling_forecast   | √        | √                | √      | √            |
-| fixed_detect_label |          | √                |        |              |
-| fixed_detect_score |          | √                |        |              |
 
-- "unfixed_detect_label"、"unfixed_detect_score"、"all_detect_label"、"all_detect_score". These four strategies do not require configuration of stratege related parameters.
+## Citation [TODO]
 
-  
-
-```
-4."report_config": 配置如何呈现评估算法与baseline算法对比的性能结果; type: dict
------"log_file_path"：需要对比性能的算法的log路径
------"report_model"：选定要被进行比较的baseline算法； type：str，list； 示例如下
-------------"all": 所有baseline算法
-------------"single":不与baseline算法进行性能比较，只输出"log_file_path"中算法性能。
-------------"darts_naivedrift": 指定的单个baseline算法
-------------['darts_naivedrift', 'darts_statsforecastautoces']：指定的多个baseline算法
------"report_metrics"：指定进行性能对比的指标，指标必须是"log_file_path"中已有的指标
------"report_type"：options["mean","median"] 利用指标结果的平均值还是中值进行性能对比
------"fill_type"：若出现null值，应该用什么值进行替换，若为"mean_value"则代表利用非null值的平均值替换null值
------"threshold_value"：容忍null值个数对阈值，当null值数量不超过阈值比例，则利用"fill_type"替换null值；否则算法性能太差，应该报错。
+If you find this repo useful, please cite our paper.
 
 ```
 
-​	
+```
+
+
+## Acknowledgement
+
+The development of this library has been supported by **Huawei Cloud**, and we would like to acknowledge their contribution and assistance.
+
+
+## Contact
+
+If you have any questions or suggestions, feel free to contact:
+
+- Xiangfei Qiu (xfqiu@stu.ecnu.edu.cn)
+- Lekui Zhou (zhoulekui@huawei.com)
+- Xingjian Wu (xjwu@stu.ecnu.edu.cn)
+- Buang Zhang (buazhang@stu.ecnu.edu.cn)
+- Junyang Du (jydu818@issbd2014.com)
+
+
+Or describe it in Issues.
