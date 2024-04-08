@@ -87,8 +87,8 @@ class DataPool(metaclass=Singleton):
 
     @property
     def forecast_data_meta(self) -> pd.DataFrame:
+        raise
         if self._forecast_data_meta is None:
-            self._forecast_data_meta = pd.read_csv(META_FORECAST_DATA_PATH)
             self._forecast_data_meta.set_index(self._DATA_KEY, drop=False, inplace=True)
         return self._forecast_data_meta
 
@@ -107,9 +107,7 @@ class DataPool(metaclass=Singleton):
         :return: Pandas Series containing metadata information.
         :raises ValueError: If metadata information for the specified series name is not found.
         """
-        if series_name in self.forecast_data_meta.index:
-            return self.forecast_data_meta.loc[[series_name]]
-        elif series_name in self.detect_data_meta.index:
+        if series_name in self.detect_data_meta.index:
             return self.detect_data_meta.loc[[series_name]]
         else:
             raise ValueError("do not have {}'s meta data".format(series_name))
@@ -120,8 +118,6 @@ class DataPool(metaclass=Singleton):
 
         :param list_of_files: A list of data files to be loaded.
         """
-        self._forecast_data_meta = pd.read_csv(META_FORECAST_DATA_PATH)
-        self._forecast_data_meta.set_index(self._DATA_KEY, drop=False, inplace=True)
 
         self._detect_data_meta = pd.read_csv(META_DETECTION_DATA_PATH)
         self._detect_data_meta.set_index(self._DATA_KEY, drop=False, inplace=True)
@@ -179,7 +175,6 @@ class DataPool(metaclass=Singleton):
 
         :param storage: the storage to share data with
         """
-        storage.put("forecast_meta", self.forecast_data_meta)
         storage.put("detect_meta", self.detect_data_meta)
         storage.put("data_pool", self.data_pool)
 

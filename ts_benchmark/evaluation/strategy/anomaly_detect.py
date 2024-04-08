@@ -192,8 +192,15 @@ class AnomalyDetect(Strategy):
                 inference_data_pickle,
                 log_info,
             ]
+
+
         except Exception as e:
             log = f"{traceback.format_exc()}\n{e}"
+        
+            print(f"###################### LOG INFO ###########################\n \
+             {log},\n  \
+            ###########################################################")
+
             single_series_results = self.get_default_result(
                 **{FieldNames.LOG_INFO: log}
             )

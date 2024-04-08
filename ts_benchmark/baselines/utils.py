@@ -123,25 +123,6 @@ def train_val_split(train_data, ratio, seq_len):
         return train_data_value, valid_data_rest
 
 
-def forecasting_data_provider(data, config, timeenc, batch_size, shuffle, drop_last):
-    dataset = DatasetForTransformer(
-        dataset=data,
-        history_len=config.seq_len,
-        prediction_len=config.pred_len,
-        label_len=config.label_len,
-        timeenc=timeenc,
-        freq=config.freq,
-    )
-    data_loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=shuffle,
-        num_workers=config.num_workers,
-        drop_last=drop_last,
-    )
-
-    return dataset, data_loader
-
 
 class DatasetForTransformer:
     def __init__(

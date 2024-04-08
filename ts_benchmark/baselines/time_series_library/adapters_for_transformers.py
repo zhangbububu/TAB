@@ -9,7 +9,6 @@ from torch import optim
 import numpy as np
 import pandas as pd
 from ts_benchmark.baselines.utils import (
-    forecasting_data_provider,
     train_val_split,
     anomaly_detection_data_provider,
 )
