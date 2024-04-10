@@ -49,7 +49,25 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 
   - **The function prototype is as follows：**
 
+    - required_hyper_params  function:
 
+      ```python
+      """
+      Return the hyperparameters required by the model
+      This function is optional and static
+      
+      :return: A dictionary that represents the hyperparameters required by the model
+      :rtype: dict
+      """
+      # For example
+      @staticmethod
+      def required_hyper_params() -> dict:
+          """
+          An empty dictionary indicating that model does not require
+          additional hyperparameters.
+          """
+          return {}
+      ```
 
     
     - detect_fit  function training model
@@ -77,8 +95,8 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
         """
         Use models for computing anomaly scores
         
-        :param train: Training data to be detect
-        :type train: pd.DataFrame
+        :param data: Training data to be detect
+        :type data: pd.DataFrame
         
         :return: Anomaly scores for each time point
         :rtype: np.ndarray
