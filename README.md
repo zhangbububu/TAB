@@ -131,7 +131,7 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 3. **The benchmark can be run in the following format：**
 
 ```shell
-python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json" --data-name-list "S4-ADL2.test.csv@79.csv" --model-name "self_implementation.DCdetector" --model-hyper-params '{"batch_size":16, "win_size":35,"anormly_ratio":1, "patch_size":[5,7]}' --report-method csv --gpus 1 --num-workers 1 --save-path "DCdetector"
+python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_multi_config.json" --typical-data-name-list "PSM.csv" --model-name "self_implementation.DCdetector" --model-hyper-params '{"batch_size":16, "win_size":35,"anormly_ratio":1, "patch_size":[5,7]}' --report-method csv --gpus 0 --num-workers 1 --save-path "DCdetector"
 ```
 
 
