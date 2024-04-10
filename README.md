@@ -1,10 +1,9 @@
-# <ins>T</ins>ime Series <ins>A</ins> nomaly Detection <ins>B</ins>enchmark (TAB)
+# <ins>T</ins>ime Series <ins>A</ins>nomaly Detection <ins>B</ins>enchmark (TAB)
 
 **TAB is an open-source library designed for time series researchers.**
 
 **We provide a clean codebase for end-to-end evaluation of time series anomaly detection models, comparing their performance with baseline algorithms under various evaluation strategies and metrics.**
 
-**We are further optimizing our code and welcome any suggestions for modifications.**
 
 
 ## Quickstart
