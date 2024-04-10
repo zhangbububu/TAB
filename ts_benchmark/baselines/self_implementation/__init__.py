@@ -1,5 +1,4 @@
 __all__ = [
-    "VAR_model",
     "LOF",
     "DCdetector",
     "AnomalyTransformer",
