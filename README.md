@@ -37,7 +37,7 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 --gpus 1 
 --num-workers 1 
 --timeout 60000  
---save-path "for_validation7"
+--save-path "PatchTST"
 ```
 
 ### Steps to develop your own method
