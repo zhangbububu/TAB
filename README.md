@@ -131,16 +131,7 @@ python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.jso
 3. **The benchmark can be run in the following format：**
 
 ```shell
-python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"  
---data-name-list "S4-ADL2.test.csv@79.csv" 
---model-name "time_series_library.PatchTST"   
---model-hyper-params '{"batch_size":128, "seq_len":100,"d_model":8, "d_ff":8, "e_layers":3, "num_epochs":3, "pred_len":0}'  
---adapter "transformer_adapter" 
---report-method csv 
---gpus 1 
---num-workers 1 
---timeout 60000  
---save-path "for_validation7"
+python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json" --data-name-list "S4-ADL2.test.csv@79.csv" --model-name "self_implementation.DCdetector" --model-hyper-params '{"batch_size":16, "win_size":35,"anormly_ratio":1, "patch_size":[5,7]}' --report-method csv --gpus 1 --num-workers 1 --save-path "DCdetector"
 ```
 
 
