@@ -277,7 +277,7 @@ class LOF:
 
 ```
 
-- **Run benchmark using VAR**
+- **Run benchmark using LOF**
 
   ```shell
   python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"   --data-name-list "S4-ADL2.test.csv@79.csv"  --model-name "self_implementation.LOF" --gpus 0  --num-workers 1  --timeout 60000  --save-path "Results"
@@ -285,30 +285,9 @@ class LOF:
 
 
 
-
-## Citation [TODO]
-
-If you find this repo useful, please cite our paper.
-
-```
-
-```
-
-
 ## Acknowledgement
 
 The development of this library has been supported by **Huawei Cloud**, and we would like to acknowledge their contribution and assistance.
 
 
-## Contact
 
-If you have any questions or suggestions, feel free to contact:
-
-- Xiangfei Qiu (xfqiu@stu.ecnu.edu.cn)
-- Lekui Zhou (zhoulekui@huawei.com)
-- Xingjian Wu (xjwu@stu.ecnu.edu.cn)
-- Buang Zhang (buazhang@stu.ecnu.edu.cn)
-- Junyang Du (jydu818@issbd2014.com)
-
-
-Or describe it in Issues.
