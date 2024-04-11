@@ -274,7 +274,7 @@ class LOF:
   python ./scripts/run_benchmark.py --config-path "unfixed_detect_label_config.json"   --data-name-list "S4-ADL2.test.csv@79.csv"  --model-name "self_implementation.LOF" --gpus 0  --num-workers 1  --timeout 60000  --save-path "Results"
   ```
 
-
+## Other metrics results
 
 ## Acknowledgement
 
